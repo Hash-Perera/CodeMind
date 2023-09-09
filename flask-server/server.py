@@ -8,7 +8,7 @@ cors = CORS(app, resources={r"/members": {"origins": "http://localhost:3000"}})
 
 @app.route("/members")
 def members():
-    return {"members" :["Member 1", "Member 2", "Member 3","Member 4"] }
+    return {"members" :["Member 1", "Member 2", "Member 3","Member 4", "Member 5"] }
 
 
 if __name__ == "__main__":

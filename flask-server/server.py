@@ -1,11 +1,14 @@
-from flask import Flask,request,render_template
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from code_analyzer.analyzer import analyze_code_line
 
 app = Flask(__name__)
 
 # Configure CORS to allow requests from 'http://localhost:3000'
-cors = CORS(app, resources={r"/members": {"origins": "http://localhost:3000"}})
+cors = CORS(app, resources={
+    r"/members": {"origins": "http://localhost:3000"},
+    r"/code": {"origins": "http://localhost:3000"}
+})
 
 @app.route("/members")
 def members():
@@ -25,6 +28,12 @@ def analyze():
 # find some way to return this to the frontend
     
 
+
+@app.route("/code",methods=['POST'])
+def receive_data():
+    data = request.get_json()
+    print("Received data from frontend:", data)
+    return jsonify({"message": "Data received successfully"})
 
 if __name__ == "__main__":
     app.run(debug=True)

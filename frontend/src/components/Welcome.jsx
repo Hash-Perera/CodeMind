@@ -30,6 +30,10 @@ const Welcome = () => {
   };
 
   const [textareaValue, setTextareaValue] = useState("");
+  const [calculatedValues, setCalculatedValues] = useState([]);
+  const [isTrue, setIsTrue] = useState(false);
+  const [codeLines, setcodeLines] = useState([]);
+  const [lineValues, serlineValues] = useState([]);
 
   //Update the state with text area value
   const handleTextareaChange = (event) => {
@@ -42,13 +46,14 @@ const Welcome = () => {
     var returnValues = {
       code: textareaValue,
     };
-    //Console the send code String value
-    console.log(returnValues);
 
     axios
-      .post("http://localhost:5000/code", returnValues)
-      .then((response) => {
-        console.log(response.data);
+      .post("http://localhost:5000/analyze", returnValues)
+      .then(async (response) => {
+        await setCalculatedValues(response.data);
+        setcodeLines(calculatedValues["lines"]);
+        serlineValues(calculatedValues["result"]);
+        setIsTrue(true);
       })
       .catch((error) => {
         console.error("Error sending data:", error);
@@ -128,9 +133,35 @@ const Welcome = () => {
               </div>
             </div>
 
-            <div className="col-lg-6">
-              <h3>Output</h3>
-            </div>
+            {/* {isTrue && (
+              <div className="col-lg-6">
+                <h3>Output</h3>
+                {calculatedValues["lines"].map((obj, i) => (
+                  <h6 key={i}>{obj}</h6>
+                ))}
+              </div>
+            )}
+            {isTrue && (
+              <div className="col-lg-6">
+                <h3>Output</h3>
+                {calculatedValues["result"].map((obj, i) => (
+                  <h6 key={i}>{obj}</h6>
+                ))}
+              </div>
+            )} */}
+            {isTrue && (
+              <div className="col-lg-6">
+                <h3>Output</h3>
+                {calculatedValues["lines"].map((line, i) => (
+                  <div key={i}>
+                    <h6>{line}</h6>
+                    <h6 style={{ color: "blue" }}>
+                      {calculatedValues["result"][i]}
+                    </h6>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

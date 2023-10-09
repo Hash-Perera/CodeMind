@@ -30,6 +30,4 @@ def analyze_code_line(line):
     line_size=operators+operands+functions+strings
 
 
-    return {
-        line_size
-    }
+    return line_size

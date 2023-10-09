@@ -7,7 +7,8 @@ app = Flask(__name__)
 # Configure CORS to allow requests from 'http://localhost:3000'
 cors = CORS(app, resources={
     r"/members": {"origins": "http://localhost:3000"},
-    r"/code": {"origins": "http://localhost:3000"}
+    r"/code": {"origins": "http://localhost:3000"},
+    r"/analyze": {"origins": "http://localhost:3000"}
 })
 
 @app.route("/members")
@@ -16,7 +17,8 @@ def members():
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    code = request.form['code']
+    data = request.get_json()
+    code = data['code'];
     lines = code.split('\n')
     results=[]
 
@@ -24,6 +26,12 @@ def analyze():
     for line in lines:
         analysis_results = analyze_code_line(line)
         results.append(analysis_results)
+    
+     # Convert sets to lists before jsonify
+    results = [list(result) if isinstance(result, set) else result for result in results]
+    lines = [list(result) if isinstance(result, set) else result for result in lines]
+
+    return jsonify({"result": results, "lines": lines})
 
 # find some way to return this to the frontend
     

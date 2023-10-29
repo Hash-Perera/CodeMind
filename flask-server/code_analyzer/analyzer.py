@@ -5,45 +5,7 @@ from code_analyzer.size import get_size_code_line
 from code_analyzer.controlStructure import get_control_control_line
 from code_analyzer.inheritance import check_inheritance_level
 
-def analyze_code():
-    code = """
-    public class ControlStructures {
-
-    public static void main(String[] args) {
-        // If statement
-        int number = 10;
-        if (number > 5) {
-            System.out.println("The number is greater than 5");
-        } else {
-            System.out.println("The number is not greater than 5");}
-
-        // Switch statement
-        String dayOfWeek = "Monday";
-        switch (dayOfWeek) {
-            case "Monday":
-                System.out.println("Today is Monday");
-                break;
-            case "Tuesday":
-                System.out.println("Today is Tuesday");
-                break;
-            case "Wednesday":
-                System.out.println("Today is Wednesday");
-                break;
-            default:
-                System.out.println("Invalid day of the week");}
-
-        // For loop
-        for (int i = 0; i < 10; i++) {
-            System.out.println(i);}
-
-        // While loop
-        int j = 0;
-        while (j < 10) {
-            System.out.println(j);
-            j++;}
-    }
-}
-    """
+def analyze_code(code):
 
     inheritance_results=[]
     inheritance_results=check_inheritance_level(code)

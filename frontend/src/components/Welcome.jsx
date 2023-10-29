@@ -10,8 +10,15 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Navbar from "./Navbar";
 import FindReplaceIcon from "@mui/icons-material/FindReplace";
 import { BarChart } from "@mui/x-charts/BarChart";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Welcome = () => {
+  const notify = () =>
+    toast.error("Enter Valid Java Code !", {
+      position: toast.POSITION.TOP_CENTER,
+    });
+
   const containerStyle = {
     backgroundImage: `url(${backgroundImage})`,
     backgroundSize: "cover", // Adjust as needed
@@ -39,11 +46,24 @@ const Welcome = () => {
     }
   };
 
+  const scrollToOptimize = () => {
+    const targetElement = document.getElementById("optimize");
+    if (targetElement) {
+      targetElement.scrollIntoView({
+        behavior: "auto", // You can change this to "smooth" for smooth scrolling
+      });
+    }
+  };
+
   const [textareaValue, setTextareaValue] = useState("");
   const [calculatedValues, setCalculatedValues] = useState([]);
   const [isTrue, setIsTrue] = useState(false);
   const [codeLines, setcodeLines] = useState([]);
   const [lineValues, serlineValues] = useState([]);
+  const [codeNames, setCodeNames] = useState([]);
+  const [chatGptCode, setChatGptCode] = useState("");
+  const [isChatGpTrue, setChatGptTrue] = useState(false);
+  const [totalCogValue, setTotalCogValue] = useState(false);
 
   //Update the state with text area value
   const handleTextareaChange = (event) => {
@@ -58,20 +78,55 @@ const Welcome = () => {
     };
 
     axios
-      .post("http://localhost:5000/analyze", returnValues)
+      .post("http://localhost:5000/analyzenew", returnValues)
       .then(async (response) => {
-        await setCalculatedValues(response.data);
-        setcodeLines(calculatedValues["lines"]);
-        serlineValues(calculatedValues["result"]);
-        setIsTrue(true);
+        console.log(response.data);
+        if (response.data !== false) {
+          await setCalculatedValues(response.data);
+          setcodeLines(response.data.lines);
+          serlineValues(response.data.complexity);
+          console.log(codeLines);
+          console.log(lineValues);
+
+          var codeNames = [];
+          var totalCogValue = 0;
+          response.data.complexity.map((line, index) => {
+            // Use the index here as needed
+            codeNames.push(`Line ${index + 1}`);
+            totalCogValue += line;
+          });
+          setCodeNames(codeNames);
+          setTotalCogValue(totalCogValue);
+          setIsTrue(true);
+          scrollToGenerate();
+        } else {
+          console.log("Fucking error");
+          notify();
+        }
       })
       .catch((error) => {
         console.error("Error sending data:", error);
       });
-
-    scrollToGenerate();
   };
 
+  const optimizeCode = () => {
+    var returnValues = {
+      code: textareaValue,
+    };
+
+    axios
+      .post("http://localhost:5000/optimize", returnValues)
+      .then((response) => {
+        console.log("Optimized Values");
+        console.log(response.data);
+        console.log(response.data.code);
+        setChatGptCode(response.data.code);
+        setChatGptTrue(true);
+      })
+      .finally(() => {
+        scrollToOptimize();
+      });
+  };
   //Clear Text Area
   const handleClearTextarea = () => {
     setTextareaValue("");
@@ -109,7 +164,6 @@ const Welcome = () => {
           </div>
         </div>
       </div>
-
       {/*Second DIV */}
       <div id="scrollTarget" className="scroll-target">
         <div className="container">
@@ -147,6 +201,7 @@ const Welcome = () => {
                   Analyze
                 </Button>
                 <Button
+                  onClick={optimizeCode}
                   variant="contained"
                   endIcon={<FindReplaceIcon />}
                   color="success"
@@ -155,81 +210,83 @@ const Welcome = () => {
                 </Button>
               </div>
             </div>
-
-            {/* {isTrue && (
-              <div className="col-lg-6">
-                <h3>Output</h3>
-                {calculatedValues["lines"].map((line, i) => (
-                  <div key={i}>
-                    <h6>{line}</h6>
-                    <h6 style={{ color: "blue" }}>
-                      {calculatedValues["result"][i]}
-                    </h6>
-                  </div>
-                ))}
-              </div>
-            )} */}
           </div>
         </div>
       </div>
-
       {/*===============================================================================*/}
-      <div id="generate" className="" style={{ height: "100vh" }}>
+      <div id="generate" className="container-fluid">
         <div className="container">
           <div className="row align-items-center">
             <h3 className="mt-3 text-center">Summary</h3>
           </div>
           <div className="row mt-5">
             <div className="col-4">
-              <h6>Total Cognitive value :</h6>
+              <h6>Total Cognitive value : </h6>
             </div>
-            <div className="col-4 ">100</div>
-          </div>
-          <div className="row">
-            <div className="col-4">
-              <h6>Total Maintainability Index value :</h6>
-            </div>
-            <div className="col-4">50</div>
-          </div>
-          <div className="row">
-            <div className="col-4">
-              <h6>Total Cyclomatic Index value :</h6>
-            </div>
-            <div className="col-4">90</div>
+            <div className="col-4 ">{totalCogValue}</div>
           </div>
         </div>
-      </div>
 
+        <div style={{ height: "50px" }}></div>
+        <div className="container">
+          <table className="table table-striped">
+            <thead className="thead-dark mb-5">
+              <tr>
+                <th className="col-10">Lines</th>
+                <th className="col-2">Complexity Value</th>
+              </tr>
+            </thead>
+
+            {isTrue && (
+              <tbody>
+                {calculatedValues["lines"].map((line, i) => (
+                  <tr key={i}>
+                    <td className="col-10">{line}</td>
+                    <td style={{ color: "blue" }} className="col-2">
+                      {calculatedValues["complexity"][i]}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            )}
+          </table>
+        </div>
+      </div>
       {/*===============================================================================*/}
-      <div className="">
-        <BarChart
-          xAxis={[
-            {
-              scaleType: "band",
-              data: [
-                "group A",
-                "group B",
-                "group C",
-                "group D",
-                "group E",
-                "group F",
-                "group G",
-                "group H",
-                "group I",
-              ],
-            },
-          ]}
-          series={[{ data: [4, 3, 5, 4, 3, 5, 4, 3, 5] }]}
-          width={1400}
-          height={600}
-        />
+
+      <div className="container">
+        {isTrue && (
+          <div className="">
+            <BarChart
+              xAxis={[
+                {
+                  scaleType: "band",
+                  data: codeNames,
+                },
+              ]}
+              series={[{ data: lineValues }]}
+              width={1400}
+              height={600}
+            />
+          </div>
+        )}
       </div>
 
-      <div className="">
+      <div className="container" id="optimize" style={{ height: "100vh" }}>
         <div className="row align-items-center">
-          <h3 className="mt-3 text-center">Chat GPT</h3>
+          <h3 className="mt-3 text-center">Optimized Code</h3>
+
+          {isChatGpTrue && (
+            <textarea
+              className="form-control"
+              id="exampleFormControlTextarea1"
+              rows="24"
+              value={chatGptCode} // Bind the value of the textarea to the state
+            ></textarea>
+          )}
         </div>
       </div>
+      <ToastContainer />
     </>
   );
 };
